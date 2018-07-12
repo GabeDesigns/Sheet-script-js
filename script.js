@@ -1,12 +1,12 @@
-/**
- *----------------------------------------------------------------------------------------------------------------------------------------------VELVET MARS v1.0.0-------------------------------------------------------------------------------------------------------------------------------------------------------------------
- * Created: 7/9/2018
- * Authors: Gabriel Rosales & Darrell Cheney
- * Purpose: To solve the issue of how the teachers send requests to fix issues with their chromebooks
- */
+//**
+//*----------------------------------------------------------------------------------------------------------------------------------------------VELVET MARS v1.0.4------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//* Created: 7/9/2018
+//* Authors: Gabriel Rosales & Darrell Cheney
+//* Purpose: To solve the issue of how the teachers send requests to fix issues with their chromebooks
+//**
 
 function focus() {
-  // This function focuses the spreadsheet on tickets that are open rather than simply opening at the top
+  // This function focuses the spreadsheet on tickets that are open rather than simply opening at the top and tells the technician how many open tickets they have
   var sheet = SpreadsheetApp.getActiveSheet();
   var statusRange = sheet.getRange(2, 8, 900, 1);
   var statusValues = statusRange.getValues();
@@ -24,9 +24,6 @@ function focus() {
   }
 
   var range = sheet.getRange(focusRow, 1);
-  range.activate();
-  focusRow - +28;
-  range = sheet.getRange(focusRow, 1);
   range.activate();
   Browser.msgBox("You have " + openTickets + " open tickets");
 }
@@ -129,6 +126,33 @@ function defaultValue() {
   for (var i = 0; data[i] != ""; ++i) {
     if (status[i] == "") {
       sheet.getRange(i + startRow, 8).setValue(NEW_ISSUE);
+    }
+  }
+}
+
+function onColorChange() {
+  var ss = SpreadsheetApp.getActiveSheet();
+  var startRow = 1; //have to start with one otherwise writing to the cell's don't work as expected
+  var range = ss.getRange(startRow, 10, 900); //getting range
+  var bgColors = range.getBackgrounds(); //getting cell colors
+  var escalated_data = range.getValues(); //getting values
+  var escalated = "Escalated";
+
+  for (var i in bgColors) {
+    //array 1
+    for (var j in bgColors[i]) {
+      //array 2 in array 1
+      // if color isn't white and if the value isn't set to escalated, set to escalate and send email
+      if (bgColors[i][j] != "#ffffff" && escalated_data[i][j] != escalated) {
+        MailApp.sendEmail(
+          "gabriel.rosales@cvisd.org",
+          "colors",
+          "something isn't white"
+        );
+
+        Browser.msgBox("meets conditions");
+        ss.getRange(++i, 10).setValue(escalated);
+      }
     }
   }
 }
