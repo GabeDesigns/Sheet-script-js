@@ -1,9 +1,9 @@
-//**
-//*----------------------------------------------------------------------------------------------------------------------------------------------VELVET MARS v1.0.4------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//* Created: 7/9/2018
-//* Authors: Gabriel Rosales & Darrell Cheney
-//* Purpose: To solve the issue of how the teachers send requests to fix issues with their chromebooks
-//**
+/**
+ *----------------------------------------------------------------------------------------------------------------------------------------------VELVET MARS v1.0.4------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Created: 7/9/2018
+ * Authors: Gabriel Rosales & Darrell Cheney
+ * Purpose: To solve the issue of how the teachers send requests to fix issues with their chromebooks
+ */
 
 function focus() {
   // This function focuses the spreadsheet on tickets that are open rather than simply opening at the top and tells the technician how many open tickets they have
@@ -28,19 +28,15 @@ function focus() {
   Browser.msgBox("You have " + openTickets + " open tickets");
 }
 
-function checkEmail() {
-  //on edit checks email function
-  sendemail();
-}
-
-function checkStatus() {
-  //on open runs default value function and runs it every minute
-  defaultValue();
-}
-
-// This constant is written in column C for rows for which an email has been sent successfully.
-var EMAIL_SENT = "EMAIL_SENT";
+// Statuses within the status column
 var COMPLETED = "Completed";
+var IN_PROGRESS = "In progress";
+var OUT_REPAIR = "Out for repair";
+
+//Status to be written inside of the Email Sent column
+var STAT_1 = "COMPLETED";
+var STAT_2 = "IN PROGRESS";
+var STAT_3 = "OUT FOR REPAIR";
 
 /**
  * Sends non-duplicate emails with data from the current spreadsheet.
@@ -73,7 +69,7 @@ function sendemail() {
   //stays in for loop untill there is data to be read
   for (var i = 0; email[i] != ""; ++i) {
     //if data in array i doesn't have email_sent column and it's status is "completed", it sends a message
-    if (data[i] != EMAIL_SENT && data_status[i] == COMPLETED) {
+    if (data[i] != STAT_1 && data_status[i] == COMPLETED) {
       // Prevents sending duplicates
 
       var emailAddress = email[i]; // First column
@@ -99,10 +95,50 @@ function sendemail() {
         replyTo: "darrell.cheney@cvisd.org",
         noReply: true
       });
-      sheet.getRange(startRow + i, 3).setValue(EMAIL_SENT);
+      sheet.getRange(startRow + i, 3).setValue(STAT_1);
 
       // Make sure the cell is updated right away in case the script is interrupted
       SpreadsheetApp.flush();
+    }
+
+    // If email sent column doesn't contain IN PROGRESS and if the status in the status column is In progress, send email and write IN PROGRESS to Email sent column
+    if (data[i] != STAT_2 && data_status[i] == IN_PROGRESS) {
+      var emailAddress = email[i];
+      var subject = "Chromebook Repair Update";
+
+      var message =
+        "This is an automated message from the Technology department. Your chromebook repair is in progress and we will keep you updated as often as possible. \n \n *** Ticket Details *** \n Chromebook Number: " +
+        chromeNum_data[i] +
+        "\n Issue: " +
+        issue_status[i] +
+        " \n Date Submitted: " +
+        dateString +
+        " \n \n Please do NOT reply to this email. If you need to contact your technician, email them at darrell.cheney@cvisd.org";
+      MailApp.sendEmail(emailAddress, subject, message, {
+        replyTo: "darrell.cheney@cvisd.org",
+        noReply: true
+      });
+      sheet.getRange(startRow + i, 3).setValue(STAT_2);
+    }
+
+    // If email sent column doesn't contain IN PROGRESS and if the status in the status column is In progress, send email and write IN PROGRESS to Email sent column
+    if (data[i] != STAT_3 && data_status[i] == OUT_REPAIR) {
+      var emailAddress = email[i];
+      var subject = "Chromebook Repair Update";
+
+      var message =
+        "This is an automated message from the Technology department. Your chromebook repair is out for repair and we will keep you updated as often as possible. \n \n *** Ticket Details *** \n Chromebook Number: " +
+        chromeNum_data[i] +
+        "\n Issue: " +
+        issue_status[i] +
+        " \n Date Submitted: " +
+        dateString +
+        " \n \n Please do NOT reply to this email. If you need to contact your technician, email them at darrell.cheney@cvisd.org";
+      MailApp.sendEmail(emailAddress, subject, message, {
+        replyTo: "darrell.cheney@cvisd.org",
+        noReply: true
+      });
+      sheet.getRange(startRow + i, 3).setValue(STAT_3);
     }
   }
 }
@@ -139,20 +175,21 @@ function onColorChange() {
   var escalated = "Escalated";
 
   for (var i in bgColors) {
-    //array 1
-    for (var j in bgColors[i]) {
-      //array 2 in array 1
-      // if color isn't white and if the value isn't set to escalated, set to escalate and send email
-      if (bgColors[i][j] != "#ffffff" && escalated_data[i][j] != escalated) {
-        MailApp.sendEmail(
-          "gabriel.rosales@cvisd.org",
-          "colors",
-          "something isn't white"
-        );
+    // if color isn't white and if the value isn't set to escalated, set to escalate and send email
+    if (bgColors[i] != "#ffffff" && escalated_data[i] != escalated) {
+      MailApp.sendEmail(
+        "gabriel.rosales@cvisd.org",
+        "cmam",
+        "something isn't white"
+      );
 
-        Browser.msgBox("meets conditions");
-        ss.getRange(++i, 10).setValue(escalated);
-      }
+      Browser.msgBox("meets conditions");
+      ss.getRange(++i, 10).setValue(escalated);
+    }
+
+    // if color is white and if the value is set to escalated, it will delete escalated value and set it to ""
+    if (bgColors[i] == "#ffffff" && escalated_data[i] == escalated) {
+      ss.getRange(++i, 10).setValue("");
     }
   }
 }
